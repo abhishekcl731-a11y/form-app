@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Insurance Form Portal</title>
+    <title>Medical Insurance Form Portal - OCR Enabled</title>
+    <!-- Tesseract.js for Browser OCR -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,11 +61,16 @@
             border: 1px solid #ffeeba;
             border-radius: 4px;
         }
+        #ocr-status {
+            font-weight: bold;
+            color: #d9534f;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Medical Insurance Form - Data Validation & Entry</h2>
+        <h2>Medical Insurance Form - OCR & Validation Portal</h2>
         
         <!-- Google Login Section -->
         <div id="auth-section">
@@ -75,9 +82,10 @@
         <div id="app-section" style="display:none; margin-top: 20px;">
             <h3>Upload Medical Form Image</h3>
             <input type="file" id="form-image" accept="image/*">
-            <br><br>
+            <div id="ocr-status"></div>
+            <br>
 
-            <h3>Verify & Validate Fields (Matching VBA Form)</h3>
+            <h3>Verify & Validate Fields (OCR Auto-filled & Editable)</h3>
             <div class="grid-container">
                 <!-- Column 1 Fields -->
                 <div class="field-group"><label>IMAGE NAME</label><input type="text" id="IMAGE_NAME"></div>
