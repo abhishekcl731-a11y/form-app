@@ -17,8 +17,12 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+// Aapki di gayi Free Google AI Studio API Key
+const GEMINI_API_KEY = "AQ.Ab8RN6Js_nFBhTfhFABYfv7e1nmj4yqAewoYzPZxMo05wKWlOA";
+
 const allowedUsers = [
     "abhishekcl731@gmail.com"
+    "13abhishek92@gmail.com"
 ];
 
 const loginBtn = document.getElementById("login-btn");
@@ -42,7 +46,7 @@ onAuthStateChanged(auth, (user) => {
             userInfo.style.display = "inline";
             userInfo.innerText = `Logged in as: ${user.email}`;
             appSection.style.display = "block";
-            checkEmptyFields(); // Run initial check
+            checkEmptyFields();
         } else {
             alert("Access Denied: Aapka email authorized nahi hai!");
             signOut(auth);
@@ -66,52 +70,85 @@ function checkEmptyFields() {
     });
 }
 
-// Listen to input changes to update red highlights dynamically
 document.querySelectorAll(".val-input").forEach(input => {
     input.addEventListener("input", checkEmptyFields);
 });
 
-// Image Upload & OCR Processing
-formImageInput.addEventListener("change", (e) => {
+// Convert Image to Base64 and send to Gemini Flash Vision API
+formImageInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     document.getElementById("IMAGE_NAME").value = file.name;
-    ocrStatus.innerText = "Processing OCR... Please wait (Scanning text from image)";
+    ocrStatus.innerText = "Analyzing form with Gemini Multimodal Vision AI... Please wait.";
 
-    Tesseract.recognize(
-        file,
-        'eng',
-        { logger: m => console.log(m) }
-    ).then(({ data: { text } }) => {
-        ocrStatus.innerText = "OCR Scan Completed! Review fields below (blank fields are highlighted in red).";
-        parseAndFillOCRText(text);
-        checkEmptyFields(); // Refresh highlights after OCR attempt
-    }).catch(err => {
-        console.error(err);
-        ocrStatus.innerText = "OCR Error: Failed to read image text.";
+    try {
+        // Convert image file to base64 string
+        const base64Data = await toBase64(file);
+        const cleanBase64 = base64Data.split(',')[1];
+
+        // Call Gemini 2.5 Flash API endpoint directly from browser
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        {
+                            text: `Analyze this medical insurance form image carefully. Extract all handwritten and printed data. 
+                            Return a JSON object ONLY (no markdown formatting, no backticks) with keys matching exact field names:
+                            IMAGE_NAME, RECORD_NO, EMAIL_ADDRESS, RES_ADDRESS, STATE_1, ZIP_1, COUNTRY_1, SEX_1, HEIGHT, WEIGHT, BILLER_NAME, SHIPPER_NAME, STATE_2, ZIP_2, PH_NO2, ALCOHOLIC, PAST_SURG, DIABETIC, POLICY_NO, D_B_LIFE_ASSURE, NAME_P_HOLDER, STM_NAME, DOB, SEX_2, MEDICINE, DOSAGE, PILL_RATE, COST, TOTAL_AMT, REMARK, CUSTOMER_NAME, CITY_1, PH_NO1, D_BIRTH, BLOOD_GP, CITY_2, COUNTRY_2, SMOKER, ALLERGIESED, P_INST, STM_CODE, CARD_NAME, TABLETS, SHIPPING_COST.
+                            If a field is not found, leave its value as an empty string "".`
+                        },
+                        {
+                            inline_data: {
+                                mime_type: file.type || "image/jpeg",
+                                data: cleanBase64
+                            }
+                        }
+                    ]
+                }]
+            })
+        });
+
+        const result = await response.json();
+        if (result.candidates && result.candidates[0].content.parts[0].text) {
+            let rawText = result.candidates[0].content.parts[0].text;
+            
+            // Clean up markdown block if AI returned it
+            rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+            const extractedData = JSON.parse(rawText);
+
+            // Populate form fields
+            Object.keys(extractedData).forEach(key => {
+                const inputElement = document.getElementById(key);
+                if (inputElement && extractedData[key]) {
+                    inputElement.value = extractedData[key];
+                }
+            });
+
+            ocrStatus.innerText = "AI Extraction Successful! Review fields below (blank ones are in red).";
+            checkEmptyFields();
+        } else {
+            throw new Error("Invalid response from AI");
+        }
+
+    } catch (err) {
+        console.error("AI Error:", err);
+        ocrStatus.innerText = "Error: Failed to extract data via Vision AI.";
         checkEmptyFields();
-    });
+    }
 });
 
-function parseAndFillOCRText(text) {
-    const lines = text.split('\n');
-    lines.forEach(line => {
-        let upperLine = line.toUpperCase();
-        if (upperLine.includes("POLICY")) {
-            let parts = line.split(/[:,-]/);
-            if(parts[1]) document.getElementById("POLICY_NO").value = parts[1].trim();
-        }
-        if (upperLine.includes("NAME")) {
-            let parts = line.split(/[:,-]/);
-            if(parts[1] && !document.getElementById("CUSTOMER_NAME").value) {
-                document.getElementById("CUSTOMER_NAME").value = parts[1].trim();
-            }
-        }
-        if (upperLine.includes("RECORD")) {
-            let parts = line.split(/[:,-]/);
-            if(parts[1]) document.getElementById("RECORD_NO").value = parts[1].trim();
-        }
+// Helper function to convert file to base64
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
     });
 }
 
@@ -143,11 +180,10 @@ saveBtn.addEventListener("click", async () => {
         }
     });
 
-    // If there are blank fields, ask user for confirmation before proceeding
     if (blankCount > 0) {
         const proceed = confirm(`Warning: ${blankCount} fields are still blank. Do you still want to proceed with saving?`);
         if (!proceed) {
-            return; // Exit and let user fill out the form
+            return;
         }
     }
 
@@ -159,7 +195,6 @@ saveBtn.addEventListener("click", async () => {
         });
         alert("Data successfully saved to Firebase Database! Record ID: " + docRef.id);
         
-        // Reset form
         document.querySelectorAll(".val-input").forEach(input => input.value = "");
         verifyCheck.checked = false;
         saveBtn.disabled = true;
