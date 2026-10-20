@@ -96,7 +96,7 @@
     </div>
 
     <div id="admin-section">
-        <h2>Medical Insurance Claims - Admin Dashboard</h2>
+        <h2>Medical Insurance Claims - Complete Admin Dashboard</h2>
         <div class="nav-links">
             <a href="index.html">← Back to Form Entry Portal</a>
         </div>
@@ -116,8 +116,20 @@
                         <th>Weight</th>
                         <th>Total Amt</th>
                         <th>Email Address</th>
-                        <th>Phone No</th>
+                        <th>Phone No 1</th>
+                        <th>Phone No 2</th>
                         <th>Res Address</th>
+                        <th>City 1</th>
+                        <th>State 1</th>
+                        <th>Zip 1</th>
+                        <th>DOB</th>
+                        <th>Sex 1</th>
+                        <th>Sex 2</th>
+                        <th>Occupation</th>
+                        <th>Nature of Illness</th>
+                        <th>Hospital Name</th>
+                        <th>Date of Admission</th>
+                        <th>Date of Discharge</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -202,12 +214,24 @@
                         <td><input type="text" class="edit-input" data-field="TOTAL_AMT" value="${formData.TOTAL_AMT || ''}"></td>
                         <td><input type="text" class="edit-input" data-field="EMAIL_ADDRESS" value="${formData.EMAIL_ADDRESS || ''}"></td>
                         <td><input type="text" class="edit-input" data-field="PH_NO1" value="${formData.PH_NO1 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="PH_NO2" value="${formData.PH_NO2 || ''}"></td>
                         <td><input type="text" class="edit-input" data-field="RES_ADDRESS" value="${formData.RES_ADDRESS || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="CITY_1" value="${formData.CITY_1 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="STATE_1" value="${formData.STATE_1 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="ZIP_1" value="${formData.ZIP_1 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="D_BIRTH" value="${formData.D_BIRTH || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="SEX_1" value="${formData.SEX_1 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="SEX_2" value="${formData.SEX_2 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="OCCUPATION" value="${formData.OCCUPATION || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="NATURE_OF_ILLNESS" value="${formData.NATURE_OF_ILLNESS || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="HOSPITAL_NAME" value="${formData.HOSPITAL_NAME || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="DATE_OF_ADMISSION" value="${formData.DATE_OF_ADMISSION || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="DATE_OF_DISCHARGE" value="${formData.DATE_OF_DISCHARGE || ''}"></td>
                     `;
                     tableBody.appendChild(tr);
                 });
 
-                statusMsg.innerText = `Successfully loaded ${querySnapshot.size} records.`;
+                statusMsg.innerText = `Successfully loaded ${querySnapshot.size} records with all fields.`;
 
                 // Attach update listeners
                 document.querySelectorAll(".update-btn").forEach(btn => {
