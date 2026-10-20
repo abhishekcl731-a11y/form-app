@@ -21,8 +21,8 @@ const provider = new GoogleAuthProvider();
 const GEMINI_API_KEY = "AQ.Ab8RN6Js_nFBhTfhFABYfv7e1nmj4yqAewoYzPZxMo05wKWlOA";
 
 const allowedUsers = [
-    "abhishekcl731@gmail.com"
     "13abhishek92@gmail.com"
+    
 ];
 
 const loginBtn = document.getElementById("login-btn");
