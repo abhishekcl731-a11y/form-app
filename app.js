@@ -17,12 +17,10 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Aapki di gayi Free Google AI Studio API Key
 const GEMINI_API_KEY = "AQ.Ab8RN6Js_nFBhTfhFABYfv7e1nmj4yqAewoYzPZxMo05wKWlOA";
 
 const allowedUsers = [
     "abhishekcl731@gmail.com"
-    
 ];
 
 const loginBtn = document.getElementById("login-btn");
@@ -58,7 +56,6 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Function to highlight empty fields in Red
 function checkEmptyFields() {
     const inputs = document.querySelectorAll(".val-input");
     inputs.forEach(input => {
@@ -74,7 +71,6 @@ document.querySelectorAll(".val-input").forEach(input => {
     input.addEventListener("input", checkEmptyFields);
 });
 
-// Convert Image to Base64 and send to Gemini Flash Vision API
 formImageInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -83,11 +79,9 @@ formImageInput.addEventListener("change", async (e) => {
     ocrStatus.innerText = "Analyzing form with Gemini Multimodal Vision AI... Please wait.";
 
     try {
-        // Convert image file to base64 string
         const base64Data = await toBase64(file);
         const cleanBase64 = base64Data.split(',')[1];
 
-        // Call Gemini 2.5 Flash API endpoint directly from browser
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: "POST",
             headers: {
@@ -116,12 +110,9 @@ formImageInput.addEventListener("change", async (e) => {
         const result = await response.json();
         if (result.candidates && result.candidates[0].content.parts[0].text) {
             let rawText = result.candidates[0].content.parts[0].text;
-            
-            // Clean up markdown block if AI returned it
             rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
             const extractedData = JSON.parse(rawText);
 
-            // Populate form fields
             Object.keys(extractedData).forEach(key => {
                 const inputElement = document.getElementById(key);
                 if (inputElement && extractedData[key]) {
@@ -142,7 +133,6 @@ formImageInput.addEventListener("change", async (e) => {
     }
 });
 
-// Helper function to convert file to base64
 function toBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -156,7 +146,6 @@ verifyCheck.addEventListener("change", (e) => {
     saveBtn.disabled = !e.target.checked;
 });
 
-// Save Data with Blank Fields Warning Prompt
 saveBtn.addEventListener("click", async () => {
     const fields = [
         "IMAGE_NAME", "RECORD_NO", "EMAIL_ADDRESS", "RES_ADDRESS", "STATE_1", "ZIP_1", 
