@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Insurance Form Portal - OCR Enabled</title>
-    <!-- Tesseract.js for Browser OCR -->
+    <title>Medical Insurance Form Portal - Validated OCR</title>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         body {
@@ -54,6 +53,11 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+        /* Red highlight class for unextracted/blank fields */
+        input.error-field {
+            border: 2px solid red !important;
+            background-color: #ffe6e6 !important;
+        }
         .validation-box {
             margin-top: 20px;
             padding: 15px;
@@ -78,62 +82,62 @@
             <span id="user-info" style="display:none; font-weight: bold; color: green;"></span>
         </div>
 
-        <!-- Form Entry Section (Hidden until authorized login) -->
+        <!-- Form Entry Section -->
         <div id="app-section" style="display:none; margin-top: 20px;">
             <h3>Upload Medical Form Image</h3>
             <input type="file" id="form-image" accept="image/*">
             <div id="ocr-status"></div>
             <br>
 
-            <h3>Verify & Validate Fields (OCR Auto-filled & Editable)</h3>
+            <h3>Verify & Validate Fields (Red highlights indicate blank values)</h3>
             <div class="grid-container">
                 <!-- Column 1 Fields -->
-                <div class="field-group"><label>IMAGE NAME</label><input type="text" id="IMAGE_NAME"></div>
-                <div class="field-group"><label>RECORD NO</label><input type="text" id="RECORD_NO"></div>
-                <div class="field-group"><label>EMAIL ADDRESS</label><input type="text" id="EMAIL_ADDRESS"></div>
-                <div class="field-group"><label>RES_ADDRESS</label><input type="text" id="RES_ADDRESS"></div>
-                <div class="field-group"><label>STATE_1</label><input type="text" id="STATE_1"></div>
-                <div class="field-group"><label>ZIP_1</label><input type="text" id="ZIP_1"></div>
-                <div class="field-group"><label>COUNTRY_1</label><input type="text" id="COUNTRY_1"></div>
-                <div class="field-group"><label>SEX_1</label><input type="text" id="SEX_1"></div>
-                <div class="field-group"><label>HEIGHT</label><input type="text" id="HEIGHT"></div>
-                <div class="field-group"><label>WEIGHT</label><input type="text" id="WEIGHT"></div>
-                <div class="field-group"><label>BILLER NAME</label><input type="text" id="BILLER_NAME"></div>
-                <div class="field-group"><label>SHIPPER NAME</label><input type="text" id="SHIPPER_NAME"></div>
-                <div class="field-group"><label>STATE_2</label><input type="text" id="STATE_2"></div>
-                <div class="field-group"><label>ZIP_2</label><input type="text" id="ZIP_2"></div>
-                <div class="field-group"><label>PH_NO2</label><input type="text" id="PH_NO2"></div>
-                <div class="field-group"><label>ALCOHOLIC</label><input type="text" id="ALCOHOLIC"></div>
-                <div class="field-group"><label>PAST SURG</label><input type="text" id="PAST_SURG"></div>
-                <div class="field-group"><label>DIABETIC</label><input type="text" id="DIABETIC"></div>
-                <div class="field-group"><label>POLICY NO</label><input type="text" id="POLICY_NO"></div>
-                <div class="field-group"><label>D_B_LIFE ASSURE</label><input type="text" id="D_B_LIFE_ASSURE"></div>
-                <div class="field-group"><label>NAME_P_HOLDER</label><input type="text" id="NAME_P_HOLDER"></div>
-                <div class="field-group"><label>STM NAME</label><input type="text" id="STM_NAME"></div>
-                <div class="field-group"><label>DOB</label><input type="text" id="DOB"></div>
-                <div class="field-group"><label>SEX_2</label><input type="text" id="SEX_2"></div>
-                <div class="field-group"><label>MEDICINE</label><input type="text" id="MEDICINE"></div>
-                <div class="field-group"><label>DOSAGE</label><input type="text" id="DOSAGE"></div>
-                <div class="field-group"><label>PILL RATE</label><input type="text" id="PILL_RATE"></div>
-                <div class="field-group"><label>COST</label><input type="text" id="COST"></div>
-                <div class="field-group"><label>TOTAL AMT</label><input type="text" id="TOTAL_AMT"></div>
-                <div class="field-group"><label>REMARK</label><input type="text" id="REMARK"></div>
+                <div class="field-group"><label>IMAGE NAME</label><input type="text" id="IMAGE_NAME" class="val-input"></div>
+                <div class="field-group"><label>RECORD NO</label><input type="text" id="RECORD_NO" class="val-input"></div>
+                <div class="field-group"><label>EMAIL ADDRESS</label><input type="text" id="EMAIL_ADDRESS" class="val-input"></div>
+                <div class="field-group"><label>RES_ADDRESS</label><input type="text" id="RES_ADDRESS" class="val-input"></div>
+                <div class="field-group"><label>STATE_1</label><input type="text" id="STATE_1" class="val-input"></div>
+                <div class="field-group"><label>ZIP_1</label><input type="text" id="ZIP_1" class="val-input"></div>
+                <div class="field-group"><label>COUNTRY_1</label><input type="text" id="COUNTRY_1" class="val-input"></div>
+                <div class="field-group"><label>SEX_1</label><input type="text" id="SEX_1" class="val-input"></div>
+                <div class="field-group"><label>HEIGHT</label><input type="text" id="HEIGHT" class="val-input"></div>
+                <div class="field-group"><label>WEIGHT</label><input type="text" id="WEIGHT" class="val-input"></div>
+                <div class="field-group"><label>BILLER NAME</label><input type="text" id="BILLER_NAME" class="val-input"></div>
+                <div class="field-group"><label>SHIPPER NAME</label><input type="text" id="SHIPPER_NAME" class="val-input"></div>
+                <div class="field-group"><label>STATE_2</label><input type="text" id="STATE_2" class="val-input"></div>
+                <div class="field-group"><label>ZIP_2</label><input type="text" id="ZIP_2" class="val-input"></div>
+                <div class="field-group"><label>PH_NO2</label><input type="text" id="PH_NO2" class="val-input"></div>
+                <div class="field-group"><label>ALCOHOLIC</label><input type="text" id="ALCOHOLIC" class="val-input"></div>
+                <div class="field-group"><label>PAST SURG</label><input type="text" id="PAST_SURG" class="val-input"></div>
+                <div class="field-group"><label>DIABETIC</label><input type="text" id="DIABETIC" class="val-input"></div>
+                <div class="field-group"><label>POLICY NO</label><input type="text" id="POLICY_NO" class="val-input"></div>
+                <div class="field-group"><label>D_B_LIFE ASSURE</label><input type="text" id="D_B_LIFE_ASSURE" class="val-input"></div>
+                <div class="field-group"><label>NAME_P_HOLDER</label><input type="text" id="NAME_P_HOLDER" class="val-input"></div>
+                <div class="field-group"><label>STM NAME</label><input type="text" id="STM_NAME" class="val-input"></div>
+                <div class="field-group"><label>DOB</label><input type="text" id="DOB" class="val-input"></div>
+                <div class="field-group"><label>SEX_2</label><input type="text" id="SEX_2" class="val-input"></div>
+                <div class="field-group"><label>MEDICINE</label><input type="text" id="MEDICINE" class="val-input"></div>
+                <div class="field-group"><label>DOSAGE</label><input type="text" id="DOSAGE" class="val-input"></div>
+                <div class="field-group"><label>PILL RATE</label><input type="text" id="PILL_RATE" class="val-input"></div>
+                <div class="field-group"><label>COST</label><input type="text" id="COST" class="val-input"></div>
+                <div class="field-group"><label>TOTAL AMT</label><input type="text" id="TOTAL_AMT" class="val-input"></div>
+                <div class="field-group"><label>REMARK</label><input type="text" id="REMARK" class="val-input"></div>
                 
-                <!-- Column 2 Fields matching VBA form -->
-                <div class="field-group"><label>CUSTOMER NAME</label><input type="text" id="CUSTOMER_NAME"></div>
-                <div class="field-group"><label>CITY_1</label><input type="text" id="CITY_1"></div>
-                <div class="field-group"><label>PH_NO1</label><input type="text" id="PH_NO1"></div>
-                <div class="field-group"><label>D_BIRTH</label><input type="text" id="D_BIRTH"></div>
-                <div class="field-group"><label>BLOOD GP</label><input type="text" id="BLOOD_GP"></div>
-                <div class="field-group"><label>CITY_2</label><input type="text" id="CITY_2"></div>
-                <div class="field-group"><label>COUNTRY_2</label><input type="text" id="COUNTRY_2"></div>
-                <div class="field-group"><label>SMOKER</label><input type="text" id="SMOKER"></div>
-                <div class="field-group"><label>ALLERGIESED</label><input type="text" id="ALLERGIESED"></div>
-                <div class="field-group"><label>P_INST</label><input type="text" id="P_INST"></div>
-                <div class="field-group"><label>STM CODE</label><input type="text" id="STM_CODE"></div>
-                <div class="field-group"><label>CARD NAME</label><input type="text" id="CARD_NAME"></div>
-                <div class="field-group"><label>TABLETS</label><input type="text" id="TABLETS"></div>
-                <div class="field-group"><label>SHIPPING COST</label><input type="text" id="SHIPPING_COST"></div>
+                <!-- Column 2 Fields -->
+                <div class="field-group"><label>CUSTOMER NAME</label><input type="text" id="CUSTOMER_NAME" class="val-input"></div>
+                <div class="field-group"><label>CITY_1</label><input type="text" id="CITY_1" class="val-input"></div>
+                <div class="field-group"><label>PH_NO1</label><input type="text" id="PH_NO1" class="val-input"></div>
+                <div class="field-group"><label>D_BIRTH</label><input type="text" id="D_BIRTH" class="val-input"></div>
+                <div class="field-group"><label>BLOOD GP</label><input type="text" id="BLOOD_GP" class="val-input"></div>
+                <div class="field-group"><label>CITY_2</label><input type="text" id="CITY_2" class="val-input"></div>
+                <div class="field-group"><label>COUNTRY_2</label><input type="text" id="COUNTRY_2" class="val-input"></div>
+                <div class="field-group"><label>SMOKER</label><input type="text" id="SMOKER" class="val-input"></div>
+                <div class="field-group"><label>ALLERGIESED</label><input type="text" id="ALLERGIESED" class="val-input"></div>
+                <div class="field-group"><label>P_INST</label><input type="text" id="P_INST" class="val-input"></div>
+                <div class="field-group"><label>STM CODE</label><input type="text" id="STM_CODE" class="val-input"></div>
+                <div class="field-group"><label>CARD NAME</label><input type="text" id="CARD_NAME" class="val-input"></div>
+                <div class="field-group"><label>TABLETS</label><input type="text" id="TABLETS" class="val-input"></div>
+                <div class="field-group"><label>SHIPPING COST</label><input type="text" id="SHIPPING_COST" class="val-input"></div>
             </div>
 
             <!-- Mandatory Validation Checkbox Section -->
@@ -144,12 +148,11 @@
                 </label>
             </div>
 
-            <!-- Save Button (Disabled by default until checkbox is checked) -->
+            <!-- Save Button -->
             <button id="save-btn" disabled>Save to Firebase Database</button>
         </div>
     </div>
 
-    <!-- Firebase SDK Scripts -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
