@@ -17,12 +17,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Aapka naya Serverless Backend Web App URL
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxbmS8Aug0xRwvm-6EZ57pMm-yclzXAi9faKIg2NoOmnIe0XK0p7Q44PF-n_5ZD0IuZwg/exec";
 
-const allowedUsers = [
-    "abhishekcl731@gmail.com"
-];
+const allowedUsers = ["abhishekcl731@gmail.com"];
 
 const loginBtn = document.getElementById("login-btn");
 const userInfo = document.getElementById("user-info");
@@ -72,13 +69,13 @@ document.querySelectorAll(".val-input").forEach(input => {
     input.addEventListener("input", checkEmptyFields);
 });
 
-// Send image to Google Apps Script Backend (No CORS issues!)
 formImageInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     document.getElementById("IMAGE_NAME").value = file.name;
-    ocrStatus.innerText = "Processing form securely via AI Backend... Please wait.";
+    ocrStatus.innerText = "Analyzing form via Gemini AI Backend... Please wait.";
+    ocrStatus.style.color = "#007BFF";
 
     try {
         const base64Data = await toBase64(file);
@@ -97,23 +94,24 @@ formImageInput.addEventListener("change", async (e) => {
         if (result.success && result.data) {
             const extractedData = result.data;
 
-            // Populate form fields automatically
             Object.keys(extractedData).forEach(key => {
                 const inputElement = document.getElementById(key);
-                if (inputElement && extractedData[key]) {
+                if (inputElement && extractedData[key] !== undefined && extractedData[key] !== null) {
                     inputElement.value = extractedData[key];
                 }
             });
 
-            ocrStatus.innerText = "AI Extraction Successful! Review fields below (blank ones are in red).";
+            ocrStatus.innerText = "AI Extraction Successful! Check filled fields below.";
+            ocrStatus.style.color = "green";
             checkEmptyFields();
         } else {
-            throw new Error(result.error || "Failed to process image.");
+            throw new Error(result.error || "Unknown backend error.");
         }
 
     } catch (err) {
-        console.error("Backend Error:", err);
-        ocrStatus.innerText = "Error: Failed to extract data through backend.";
+        console.error("AI Error:", err);
+        ocrStatus.innerText = "Notice: AI extraction skipped/failed. You can manually fill the fields highlighted in red.";
+        ocrStatus.style.color = "#d9534f";
         checkEmptyFields();
     }
 });
