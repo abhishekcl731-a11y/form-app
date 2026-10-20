@@ -17,7 +17,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-const GEMINI_API_KEY = "AQ.Ab8RN6Js_nFBhTfhFABYfv7e1nmj4yqAewoYzPZxMo05wKWlOA";
+// Aapka naya Serverless Backend Web App URL
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxbmS8Aug0xRwvm-6EZ57pMm-yclzXAi9faKIg2NoOmnIe0XK0p7Q44PF-n_5ZD0IuZwg/exec";
 
 const allowedUsers = [
     "abhishekcl731@gmail.com"
@@ -71,48 +72,32 @@ document.querySelectorAll(".val-input").forEach(input => {
     input.addEventListener("input", checkEmptyFields);
 });
 
+// Send image to Google Apps Script Backend (No CORS issues!)
 formImageInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     document.getElementById("IMAGE_NAME").value = file.name;
-    ocrStatus.innerText = "Analyzing form with Gemini Multimodal Vision AI... Please wait.";
+    ocrStatus.innerText = "Processing form securely via AI Backend... Please wait.";
 
     try {
         const base64Data = await toBase64(file);
         const cleanBase64 = base64Data.split(',')[1];
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(BACKEND_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        {
-                            text: `Analyze this medical insurance form image carefully. Extract all handwritten and printed data. 
-                            Return a JSON object ONLY (no markdown formatting, no backticks) with keys matching exact field names:
-                            IMAGE_NAME, RECORD_NO, EMAIL_ADDRESS, RES_ADDRESS, STATE_1, ZIP_1, COUNTRY_1, SEX_1, HEIGHT, WEIGHT, BILLER_NAME, SHIPPER_NAME, STATE_2, ZIP_2, PH_NO2, ALCOHOLIC, PAST_SURG, DIABETIC, POLICY_NO, D_B_LIFE_ASSURE, NAME_P_HOLDER, STM_NAME, DOB, SEX_2, MEDICINE, DOSAGE, PILL_RATE, COST, TOTAL_AMT, REMARK, CUSTOMER_NAME, CITY_1, PH_NO1, D_BIRTH, BLOOD_GP, CITY_2, COUNTRY_2, SMOKER, ALLERGIESED, P_INST, STM_CODE, CARD_NAME, TABLETS, SHIPPING_COST.
-                            If a field is not found, leave its value as an empty string "".`
-                        },
-                        {
-                            inline_data: {
-                                mime_type: file.type || "image/jpeg",
-                                data: cleanBase64
-                            }
-                        }
-                    ]
-                }]
+                imageBytes: cleanBase64,
+                mimeType: file.type || "image/jpeg"
             })
         });
 
         const result = await response.json();
-        if (result.candidates && result.candidates[0].content.parts[0].text) {
-            let rawText = result.candidates[0].content.parts[0].text;
-            rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-            const extractedData = JSON.parse(rawText);
+        
+        if (result.success && result.data) {
+            const extractedData = result.data;
 
+            // Populate form fields automatically
             Object.keys(extractedData).forEach(key => {
                 const inputElement = document.getElementById(key);
                 if (inputElement && extractedData[key]) {
@@ -123,12 +108,12 @@ formImageInput.addEventListener("change", async (e) => {
             ocrStatus.innerText = "AI Extraction Successful! Review fields below (blank ones are in red).";
             checkEmptyFields();
         } else {
-            throw new Error("Invalid response from AI");
+            throw new Error(result.error || "Failed to process image.");
         }
 
     } catch (err) {
-        console.error("AI Error:", err);
-        ocrStatus.innerText = "Error: Failed to extract data via Vision AI.";
+        console.error("Backend Error:", err);
+        ocrStatus.innerText = "Error: Failed to extract data through backend.";
         checkEmptyFields();
     }
 });
