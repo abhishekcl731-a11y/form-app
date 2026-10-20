@@ -27,6 +27,8 @@ const userInfo = document.getElementById("user-info");
 const appSection = document.getElementById("app-section");
 const verifyCheck = document.getElementById("verify-check");
 const saveBtn = document.getElementById("save-btn");
+const formImageInput = document.getElementById("form-image");
+const ocrStatus = document.getElementById("ocr-status");
 
 loginBtn.addEventListener("click", () => {
     signInWithPopup(auth, provider).catch((error) => {
@@ -51,6 +53,55 @@ onAuthStateChanged(auth, (user) => {
         appSection.style.display = "none";
     }
 });
+
+// Image Upload & OCR Processing via Tesseract.js
+formImageInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Set Image Name field automatically
+    document.getElementById("IMAGE_NAME").value = file.name;
+
+    ocrStatus.innerText = "Processing OCR... Please wait (Scanning text from image)";
+
+    Tesseract.recognize(
+        file,
+        'eng',
+        { logger: m => console.log(m) }
+    ).then(({ data: { text } }) => {
+        ocrStatus.innerText = "OCR Scan Completed! Please review and validate the fields below.";
+        console.log("Extracted Text:", text);
+
+        // Basic keyword parsing logic to map text into form fields if matched
+        parseAndFillOCRText(text);
+    }).catch(err => {
+        console.error(err);
+        ocrStatus.innerText = "OCR Error: Failed to read image text.";
+    });
+});
+
+// Simple parser function to distribute OCR text into form fields
+function parseAndFillOCRText(text) {
+    const lines = text.split('\n');
+    lines.forEach(line => {
+        let upperLine = line.toUpperCase();
+        // You can inspect scanned lines and map them here or manually correct them in UI
+        if (upperLine.includes("POLICY")) {
+            let parts = line.split(/[:,-]/);
+            if(parts[1]) document.getElementById("POLICY_NO").value = parts[1].trim();
+        }
+        if (upperLine.includes("NAME")) {
+            let parts = line.split(/[:,-]/);
+            if(parts[1] && !document.getElementById("CUSTOMER_NAME").value) {
+                document.getElementById("CUSTOMER_NAME").value = parts[1].trim();
+            }
+        }
+        if (upperLine.includes("RECORD")) {
+            let parts = line.split(/[:,-]/);
+            if(parts[1]) document.getElementById("RECORD_NO").value = parts[1].trim();
+        }
+    });
+}
 
 // Enable/Disable Save Button based on Validation Checkbox
 verifyCheck.addEventListener("change", (e) => {
@@ -87,6 +138,7 @@ saveBtn.addEventListener("click", async () => {
         document.querySelectorAll("input[type='text']").forEach(input => input.value = "");
         verifyCheck.checked = false;
         saveBtn.disabled = true;
+        ocrStatus.innerText = "";
 
     } catch (e) {
         console.error("Error saving data: ", e);
