@@ -3,39 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Insurance Form Portal - Validated OCR</title>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <title>Medical Insurance Form Portal</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border-color: #cbd5e1;
+        }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
+        /* Modern Navbar */
+        nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-brand {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--primary);
+        }
+        .nav-menu a {
+            text-decoration: none;
+            color: #475569;
+            margin-left: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .nav-menu a:hover, .nav-menu a.active {
+            color: var(--primary);
+        }
+
         .container {
-            max-width: 800px;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-            margin: auto;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 30px auto;
         }
-        h2, h3 { color: #333; }
+        h2, h3 { color: var(--text-main); margin-top: 0; }
+        
+        .upload-card {
+            background: #f1f5f9;
+            border: 2px dashed var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
         button {
-            padding: 10px 15px;
-            background: #007BFF;
+            padding: 10px 18px;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-top: 10px;
+            font-weight: 600;
+            transition: background 0.2s;
         }
-        button:hover { background: #0056b3; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        button:hover { background: var(--primary-dark); }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
+
         .grid-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
             margin-top: 15px;
         }
         .field-group {
@@ -44,112 +91,143 @@
         }
         label {
             font-size: 12px;
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 3px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
         }
-        input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        input[type="text"], input[type="file"] {
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
         }
-        /* Red highlight class for unextracted/blank fields */
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
         input.error-field {
-            border: 2px solid red !important;
-            background-color: #ffe6e6 !important;
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
         }
+        
         .validation-box {
-            margin-top: 20px;
+            margin-top: 25px;
             padding: 15px;
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         #ocr-status {
-            font-weight: bold;
-            color: #d9534f;
+            font-weight: 600;
+            font-size: 14px;
             margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        #auth-section {
+            text-align: center;
+            padding: 40px;
         }
     </style>
 </head>
 <body>
+
+    <!-- Modern Shared Navigation -->
+    <nav>
+        <div class="nav-brand">🏥 Medical Claim Portal</div>
+        <div class="nav-menu">
+            <a href="index.html" class="active">Form Entry</a>
+            <a href="admin.html">Admin Dashboard</a>
+            <a href="logs.html">System Logs</a>
+        </div>
+    </nav>
+
     <div class="container">
-        <h2>Medical Insurance Form - OCR & Validation Portal</h2>
-        
         <!-- Google Login Section -->
         <div id="auth-section">
+            <h2>Welcome, Please Authenticate</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">Sign in with your authorized Google account to access form processing.</p>
             <button id="login-btn">Login with Google</button>
-            <span id="user-info" style="display:none; font-weight: bold; color: green;"></span>
+            <span id="user-info" style="display:none; font-weight: bold; color: var(--success); margin-top: 15px; display: block;"></span>
         </div>
 
         <!-- Form Entry Section -->
-        <div id="app-section" style="display:none; margin-top: 20px;">
-            <h3>Upload Medical Form Image</h3>
-            <input type="file" id="form-image" accept="image/*">
-            <div id="ocr-status"></div>
-            <br>
+        <div id="app-section" style="display:none;">
+            <h2>Medical Insurance Form Processing</h2>
+            
+            <div class="upload-card">
+                <h3>Upload Medical Form Image</h3>
+                <input type="file" id="form-image" accept="image/*">
+                <div id="ocr-status"></div>
+            </div>
 
-            <h3>Verify & Validate Fields (Red highlights indicate blank values)</h3>
+            <h3>Verify & Validate Fields</h3>
+            <p style="font-size: 13px; color: #64748b; margin-top: -5px;">Red borders highlight empty or unextracted fields.</p>
+            
             <div class="grid-container">
-                <!-- Column 1 Fields -->
                 <div class="field-group"><label>IMAGE NAME</label><input type="text" id="IMAGE_NAME" class="val-input"></div>
                 <div class="field-group"><label>RECORD NO</label><input type="text" id="RECORD_NO" class="val-input"></div>
                 <div class="field-group"><label>EMAIL ADDRESS</label><input type="text" id="EMAIL_ADDRESS" class="val-input"></div>
-                <div class="field-group"><label>RES_ADDRESS</label><input type="text" id="RES_ADDRESS" class="val-input"></div>
-                <div class="field-group"><label>STATE_1</label><input type="text" id="STATE_1" class="val-input"></div>
-                <div class="field-group"><label>ZIP_1</label><input type="text" id="ZIP_1" class="val-input"></div>
-                <div class="field-group"><label>COUNTRY_1</label><input type="text" id="COUNTRY_1" class="val-input"></div>
-                <div class="field-group"><label>SEX_1</label><input type="text" id="SEX_1" class="val-input"></div>
+                <div class="field-group"><label>RES ADDRESS</label><input type="text" id="RES_ADDRESS" class="val-input"></div>
+                <div class="field-group"><label>STATE 1</label><input type="text" id="STATE_1" class="val-input"></div>
+                <div class="field-group"><label>ZIP 1</label><input type="text" id="ZIP_1" class="val-input"></div>
+                <div class="field-group"><label>COUNTRY 1</label><input type="text" id="COUNTRY_1" class="val-input"></div>
+                <div class="field-group"><label>SEX 1</label><input type="text" id="SEX_1" class="val-input"></div>
                 <div class="field-group"><label>HEIGHT</label><input type="text" id="HEIGHT" class="val-input"></div>
                 <div class="field-group"><label>WEIGHT</label><input type="text" id="WEIGHT" class="val-input"></div>
                 <div class="field-group"><label>BILLER NAME</label><input type="text" id="BILLER_NAME" class="val-input"></div>
                 <div class="field-group"><label>SHIPPER NAME</label><input type="text" id="SHIPPER_NAME" class="val-input"></div>
-                <div class="field-group"><label>STATE_2</label><input type="text" id="STATE_2" class="val-input"></div>
-                <div class="field-group"><label>ZIP_2</label><input type="text" id="ZIP_2" class="val-input"></div>
-                <div class="field-group"><label>PH_NO2</label><input type="text" id="PH_NO2" class="val-input"></div>
+                <div class="field-group"><label>STATE 2</label><input type="text" id="STATE_2" class="val-input"></div>
+                <div class="field-group"><label>ZIP 2</label><input type="text" id="ZIP_2" class="val-input"></div>
+                <div class="field-group"><label>PHONE 2</label><input type="text" id="PH_NO2" class="val-input"></div>
                 <div class="field-group"><label>ALCOHOLIC</label><input type="text" id="ALCOHOLIC" class="val-input"></div>
                 <div class="field-group"><label>PAST SURG</label><input type="text" id="PAST_SURG" class="val-input"></div>
                 <div class="field-group"><label>DIABETIC</label><input type="text" id="DIABETIC" class="val-input"></div>
                 <div class="field-group"><label>POLICY NO</label><input type="text" id="POLICY_NO" class="val-input"></div>
-                <div class="field-group"><label>D_B_LIFE ASSURE</label><input type="text" id="D_B_LIFE_ASSURE" class="val-input"></div>
-                <div class="field-group"><label>NAME_P_HOLDER</label><input type="text" id="NAME_P_HOLDER" class="val-input"></div>
+                <div class="field-group"><label>LIFE ASSURE DOB</label><input type="text" id="D_B_LIFE_ASSURE" class="val-input"></div>
+                <div class="field-group"><label>POLICY HOLDER NAME</label><input type="text" id="NAME_P_HOLDER" class="val-input"></div>
                 <div class="field-group"><label>STM NAME</label><input type="text" id="STM_NAME" class="val-input"></div>
                 <div class="field-group"><label>DOB</label><input type="text" id="DOB" class="val-input"></div>
-                <div class="field-group"><label>SEX_2</label><input type="text" id="SEX_2" class="val-input"></div>
+                <div class="field-group"><label>SEX 2</label><input type="text" id="SEX_2" class="val-input"></div>
                 <div class="field-group"><label>MEDICINE</label><input type="text" id="MEDICINE" class="val-input"></div>
                 <div class="field-group"><label>DOSAGE</label><input type="text" id="DOSAGE" class="val-input"></div>
                 <div class="field-group"><label>PILL RATE</label><input type="text" id="PILL_RATE" class="val-input"></div>
                 <div class="field-group"><label>COST</label><input type="text" id="COST" class="val-input"></div>
                 <div class="field-group"><label>TOTAL AMT</label><input type="text" id="TOTAL_AMT" class="val-input"></div>
                 <div class="field-group"><label>REMARK</label><input type="text" id="REMARK" class="val-input"></div>
-                
-                <!-- Column 2 Fields -->
                 <div class="field-group"><label>CUSTOMER NAME</label><input type="text" id="CUSTOMER_NAME" class="val-input"></div>
-                <div class="field-group"><label>CITY_1</label><input type="text" id="CITY_1" class="val-input"></div>
-                <div class="field-group"><label>PH_NO1</label><input type="text" id="PH_NO1" class="val-input"></div>
-                <div class="field-group"><label>D_BIRTH</label><input type="text" id="D_BIRTH" class="val-input"></div>
-                <div class="field-group"><label>BLOOD GP</label><input type="text" id="BLOOD_GP" class="val-input"></div>
-                <div class="field-group"><label>CITY_2</label><input type="text" id="CITY_2" class="val-input"></div>
-                <div class="field-group"><label>COUNTRY_2</label><input type="text" id="COUNTRY_2" class="val-input"></div>
+                <div class="field-group"><label>CITY 1</label><input type="text" id="CITY_1" class="val-input"></div>
+                <div class="field-group"><label>PHONE 1</label><input type="text" id="PH_NO1" class="val-input"></div>
+                <div class="field-group"><label>BIRTH DATE</label><input type="text" id="D_BIRTH" class="val-input"></div>
+                <div class="field-group"><label>BLOOD GROUP</label><input type="text" id="BLOOD_GP" class="val-input"></div>
+                <div class="field-group"><label>CITY 2</label><input type="text" id="CITY_2" class="val-input"></div>
+                <div class="field-group"><label>COUNTRY 2</label><input type="text" id="COUNTRY_2" class="val-input"></div>
                 <div class="field-group"><label>SMOKER</label><input type="text" id="SMOKER" class="val-input"></div>
-                <div class="field-group"><label>ALLERGIESED</label><input type="text" id="ALLERGIESED" class="val-input"></div>
-                <div class="field-group"><label>P_INST</label><input type="text" id="P_INST" class="val-input"></div>
+                <div class="field-group"><label>ALLERGIES</label><input type="text" id="ALLERGIESED" class="val-input"></div>
+                <div class="field-group"><label>P INST</label><input type="text" id="P_INST" class="val-input"></div>
                 <div class="field-group"><label>STM CODE</label><input type="text" id="STM_CODE" class="val-input"></div>
                 <div class="field-group"><label>CARD NAME</label><input type="text" id="CARD_NAME" class="val-input"></div>
                 <div class="field-group"><label>TABLETS</label><input type="text" id="TABLETS" class="val-input"></div>
                 <div class="field-group"><label>SHIPPING COST</label><input type="text" id="SHIPPING_COST" class="val-input"></div>
             </div>
 
-            <!-- Mandatory Validation Checkbox Section -->
             <div class="validation-box">
-                <input type="checkbox" id="verify-check">
-                <label for="verify-check" style="display:inline; color: #856404; font-weight: bold;">
-                    I hereby verify that all extracted and entered details above are thoroughly checked and correct.
+                <input type="checkbox" id="verify-check" style="width: 18px; height: 18px; cursor: pointer;">
+                <label for="verify-check" style="color: #b45309; font-weight: 600; cursor: pointer; margin-bottom: 0; text-transform: none; font-size: 13px;">
+                    I verify that all extracted and entered details above are thoroughly checked and correct.
                 </label>
             </div>
 
-            <!-- Save Button -->
-            <button id="save-btn" disabled>Save to Firebase Database</button>
+            <div style="margin-top: 20px;">
+                <button id="save-btn" disabled style="width: 100%; padding: 12px; font-size: 16px;">Save to Firebase Database</button>
+            </div>
         </div>
     </div>
 
