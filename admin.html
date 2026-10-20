@@ -5,39 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Medical Insurance Forms</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border-color: #cbd5e1;
+        }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
         }
-        h2 {
-            color: #007BFF;
-            text-align: center;
+        nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .nav-links {
-            text-align: center;
-            margin-bottom: 20px;
+        .nav-brand {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--primary);
         }
-        .nav-links a {
+        .nav-menu a {
             text-decoration: none;
-            background: #007BFF;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 4px;
+            color: #475569;
+            margin-left: 20px;
+            font-weight: 600;
             font-size: 14px;
+            transition: color 0.2s;
         }
-        .nav-links a:hover {
-            background: #0056b3;
+        .nav-menu a:hover, .nav-menu a.active {
+            color: var(--primary);
         }
+
+        .main-wrapper {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h2 { color: var(--text-main); }
+        
         .table-container {
             width: 100%;
             overflow-x: auto;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 6px;
-            padding: 10px;
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
         }
         table {
             width: 100%;
@@ -46,42 +69,51 @@
             white-space: nowrap;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 12px;
             text-align: left;
         }
         th {
-            background-color: #007BFF;
+            background-color: var(--primary);
             color: white;
             position: sticky;
             top: 0;
             z-index: 2;
         }
         tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #f8fafc;
         }
         input.edit-input {
-            width: 120px;
-            padding: 4px;
+            width: 130px;
+            padding: 5px 8px;
             font-size: 12px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
         }
         button.update-btn {
-            background-color: #28a745;
+            background-color: var(--success);
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            font-weight: 600;
         }
-        button.update-btn:hover {
-            background-color: #218838;
-        }
+        button.update-btn:hover { background: #15803d; }
+        
         #auth-container {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 80px;
+        }
+        #login-btn {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
         }
         #admin-section {
             display: none;
@@ -90,17 +122,24 @@
 </head>
 <body>
 
+    <nav>
+        <div class="nav-brand">🏥 Medical Claim Portal</div>
+        <div class="nav-menu">
+            <a href="index.html">Form Entry</a>
+            <a href="admin.html" class="active">Admin Dashboard</a>
+            <a href="logs.html">System Logs</a>
+        </div>
+    </nav>
+
     <div id="auth-container">
         <h2>Admin Authentication Required</h2>
-        <button id="login-btn" style="padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer;">Login with Google (Admin)</button>
+        <p style="color: #64748b;">Please login with an authorized admin account.</p>
+        <button id="login-btn">Login with Google (Admin)</button>
     </div>
 
-    <div id="admin-section">
-        <h2>Medical Insurance Claims - Complete Admin Dashboard</h2>
-        <div class="nav-links">
-            <a href="index.html">← Back to Form Entry Portal</a>
-        </div>
-        <div id="status-msg" style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #555;">Loading records from Firebase...</div>
+    <div id="admin-section" class="main-wrapper">
+        <h2>Admin Dashboard - Claims Database</h2>
+        <div id="status-msg" style="font-weight: 600; color: #475569; margin-bottom: 10px;">Loading records from Firebase...</div>
         
         <div class="table-container">
             <table id="records-table">
@@ -116,8 +155,8 @@
                         <th>Weight</th>
                         <th>Total Amt</th>
                         <th>Email Address</th>
-                        <th>Phone No 1</th>
-                        <th>Phone No 2</th>
+                        <th>Phone 1</th>
+                        <th>Phone 2</th>
                         <th>Res Address</th>
                         <th>City 1</th>
                         <th>State 1</th>
@@ -128,12 +167,12 @@
                         <th>Occupation</th>
                         <th>Nature of Illness</th>
                         <th>Hospital Name</th>
-                        <th>Date of Admission</th>
-                        <th>Date of Discharge</th>
+                        <th>Admission Date</th>
+                        <th>Discharge Date</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <!-- Dynamic Rows Here -->
+                    <!-- Dynamic Rows -->
                 </tbody>
             </table>
         </div>
@@ -167,9 +206,11 @@
         const tableBody = document.getElementById("table-body");
         const statusMsg = document.getElementById("status-msg");
 
-        loginBtn.addEventListener("click", () => {
-            signInWithPopup(auth, provider).catch(err => console.error("Login error:", err));
-        });
+        if(loginBtn) {
+            loginBtn.addEventListener("click", () => {
+                signInWithPopup(auth, provider).catch(err => console.error("Login error:", err));
+            });
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (user && allowedAdmins.includes(user.email)) {
@@ -231,9 +272,8 @@
                     tableBody.appendChild(tr);
                 });
 
-                statusMsg.innerText = `Successfully loaded ${querySnapshot.size} records with all fields.`;
+                statusMsg.innerText = `Successfully loaded ${querySnapshot.size} records.`;
 
-                // Attach update listeners
                 document.querySelectorAll(".update-btn").forEach(btn => {
                     btn.addEventListener("click", async (e) => {
                         const rowId = e.target.getAttribute("data-id");
