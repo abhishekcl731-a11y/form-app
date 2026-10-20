@@ -1,9 +1,7 @@
-// Import Firebase from reliable CDN bundles
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBBy0CwwzqNIV-PNUclNtWqZc3L8PndCZo",
   authDomain: "form-app-e0c85.firebaseapp.com",
@@ -14,13 +12,18 @@ const firebaseConfig = {
   measurementId: "G-WKN6DFHRXG"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// DOM Elements
+// Yahan apne authorized emails ki list daal do bhai
+const allowedUsers = [
+    "abhishekcl731@gmail.com"
+    // Agar future mein koi aur email add karni ho toh yahan niche likh sakte ho:
+    // "dusraemail@gmail.com"
+];
+
 const loginBtn = document.getElementById("login-btn");
 const userInfo = document.getElementById("user-info");
 const appSection = document.getElementById("app-section");
@@ -28,26 +31,24 @@ const addFieldBtn = document.getElementById("add-field-btn");
 const dynamicFieldsContainer = document.getElementById("dynamic-fields-container");
 const saveBtn = document.getElementById("save-btn");
 
-// 1. Google Login
 loginBtn.addEventListener("click", () => {
-    signInWithPopup(auth, provider)
-    .then((result) => {
-        console.log("Logged in successfully:", result.user.email);
-    })
-    .catch((error) => {
-        console.error("Login Error Code:", error.code);
-        console.error("Login Error Message:", error.message);
-        alert("Login Failed: " + error.message);
+    signInWithPopup(auth, provider).catch((error) => {
+        console.error("Login Error:", error.message);
     });
 });
 
-// Auth State Monitor
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        loginBtn.style.display = "none";
-        userInfo.style.display = "inline";
-        userInfo.innerText = `Logged in as: ${user.email}`;
-        appSection.style.display = "block";
+        // Check karo ki user allowed list mein hai ya nahi
+        if (allowedUsers.includes(user.email)) {
+            loginBtn.style.display = "none";
+            userInfo.style.display = "inline";
+            userInfo.innerText = `Logged in as: ${user.email}`;
+            appSection.style.display = "block";
+        } else {
+            alert("Access Denied: Aapka email authorized nahi hai!");
+            signOut(auth); // Unauthorized hone par turant logout kar do
+        }
     } else {
         loginBtn.style.display = "block";
         userInfo.style.display = "none";
@@ -55,18 +56,16 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// 2. Dynamic Field Addition
 addFieldBtn.addEventListener("click", () => {
     const row = document.createElement("div");
     row.className = "field-row";
     row.innerHTML = `
-        <input type="text" placeholder="Field Name (e.g., Claim Amount)" class="field-key">
+        <input type="text" placeholder="Field Name" class="field-key">
         <input type="text" placeholder="Field Value" class="field-val">
     `;
     dynamicFieldsContainer.appendChild(row);
 });
 
-// 3. Save Data to Firebase Firestore
 saveBtn.addEventListener("click", async () => {
     const rows = document.querySelectorAll(".field-row");
     let formData = {};
@@ -85,9 +84,9 @@ saveBtn.addEventListener("click", async () => {
             timestamp: new Date(),
             data: formData
         });
-        alert("Data successfully saved to Firebase Database! ID: " + docRef.id);
+        alert("Data successfully saved to Firebase! ID: " + docRef.id);
     } catch (e) {
-        console.error("Error adding document: ", e);
-        alert("Error saving data: " + e.message);
+        console.error("Error saving data: ", e);
+        alert("Error saving data.");
     }
 });
