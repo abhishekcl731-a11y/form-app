@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Form Extractor & Validator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+            margin: auto;
+        }
+        h2, h3 { color: #333; }
+        button {
+            padding: 10px 15px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover { background: #0056b3; }
+        .field-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Insurance Form Data Extractor</h2>
+        
+        <!-- Google Login Section -->
+        <div id="auth-section">
+            <button id="login-btn">Login with Google</button>
+            <span id="user-info" style="display:none;"></span>
+        </div>
+
+        <!-- Form Entry Section (Hidden until login) -->
+        <div id="app-section" style="display:none;">
+            <h3>Upload Form Image</h3>
+            <input type="file" id="form-image" accept="image/*">
+            
+            <h3>Dynamic Form Fields (Add/Edit as per your Bank/Insurance format)</h3>
+            <div id="dynamic-fields-container">
+                <!-- Default Fields -->
+                <div class="field-row">
+                    <input type="text" placeholder="Field Name (e.g., Policy No)" class="field-key" value="Policy Number">
+                    <input type="text" placeholder="Field Value" class="field-val">
+                </div>
+                <div class="field-row">
+                    <input type="text" placeholder="Field Name (e.g., Patient Name)" class="field-key" value="Patient Name">
+                    <input type="text" placeholder="Field Value" class="field-val">
+                </div>
+            </div>
+
+            <button id="add-field-btn">+ Add Custom Field</button>
+            <br><br>
+            <button id="save-btn">Save to Firebase Database</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Script -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
