@@ -17,18 +17,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Yahan apne authorized emails ki list daal do bhai
+// Authorized Email Whitelist
 const allowedUsers = [
     "abhishekcl731@gmail.com"
-    // Agar future mein koi aur email add karni ho toh yahan niche likh sakte ho:
-    // "dusraemail@gmail.com"
 ];
 
 const loginBtn = document.getElementById("login-btn");
 const userInfo = document.getElementById("user-info");
 const appSection = document.getElementById("app-section");
-const addFieldBtn = document.getElementById("add-field-btn");
-const dynamicFieldsContainer = document.getElementById("dynamic-fields-container");
+const verifyCheck = document.getElementById("verify-check");
 const saveBtn = document.getElementById("save-btn");
 
 loginBtn.addEventListener("click", () => {
@@ -39,7 +36,6 @@ loginBtn.addEventListener("click", () => {
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // Check karo ki user allowed list mein hai ya nahi
         if (allowedUsers.includes(user.email)) {
             loginBtn.style.display = "none";
             userInfo.style.display = "inline";
@@ -47,7 +43,7 @@ onAuthStateChanged(auth, (user) => {
             appSection.style.display = "block";
         } else {
             alert("Access Denied: Aapka email authorized nahi hai!");
-            signOut(auth); // Unauthorized hone par turant logout kar do
+            signOut(auth);
         }
     } else {
         loginBtn.style.display = "block";
@@ -56,37 +52,44 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-addFieldBtn.addEventListener("click", () => {
-    const row = document.createElement("div");
-    row.className = "field-row";
-    row.innerHTML = `
-        <input type="text" placeholder="Field Name" class="field-key">
-        <input type="text" placeholder="Field Value" class="field-val">
-    `;
-    dynamicFieldsContainer.appendChild(row);
+// Enable/Disable Save Button based on Validation Checkbox
+verifyCheck.addEventListener("change", (e) => {
+    saveBtn.disabled = !e.target.checked;
 });
 
+// Save Data to Firebase Firestore matching VBA schema
 saveBtn.addEventListener("click", async () => {
-    const rows = document.querySelectorAll(".field-row");
-    let formData = {};
+    const fields = [
+        "IMAGE_NAME", "RECORD_NO", "EMAIL_ADDRESS", "RES_ADDRESS", "STATE_1", "ZIP_1", 
+        "COUNTRY_1", "SEX_1", "HEIGHT", "WEIGHT", "BILLER_NAME", "SHIPPER_NAME", 
+        "STATE_2", "ZIP_2", "PH_NO2", "ALCOHOLIC", "PAST_SURG", "DIABETIC", 
+        "POLICY_NO", "D_B_LIFE_ASSURE", "NAME_P_HOLDER", "STM_NAME", "DOB", 
+        "SEX_2", "MEDICINE", "DOSAGE", "PILL_RATE", "COST", "TOTAL_AMT", "REMARK", 
+        "CUSTOMER_NAME", "CITY_1", "PH_NO1", "D_BIRTH", "BLOOD_GP", "CITY_2", 
+        "COUNTRY_2", "SMOKER", "ALLERGIESED", "P_INST", "STM_CODE", "CARD_NAME", 
+        "TABLETS", "SHIPPING_COST"
+    ];
 
-    rows.forEach(row => {
-        const key = row.querySelector(".field-key").value.trim();
-        const val = row.querySelector(".field-val").value.trim();
-        if (key) {
-            formData[key] = val;
-        }
+    let formData = {};
+    fields.forEach(field => {
+        formData[field] = document.getElementById(field).value.trim();
     });
 
     try {
-        const docRef = await addDoc(collection(db, "insurance_forms"), {
+        const docRef = await addDoc(collection(db, "medical_insurance_forms"), {
             user: auth.currentUser.email,
             timestamp: new Date(),
             data: formData
         });
-        alert("Data successfully saved to Firebase! ID: " + docRef.id);
+        alert("Validated data successfully saved to Firebase Database! Record ID: " + docRef.id);
+        
+        // Reset form & checkbox after successful save
+        document.querySelectorAll("input[type='text']").forEach(input => input.value = "");
+        verifyCheck.checked = false;
+        saveBtn.disabled = true;
+
     } catch (e) {
         console.error("Error saving data: ", e);
-        alert("Error saving data.");
+        alert("Error saving data to database.");
     }
 });
