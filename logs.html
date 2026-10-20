@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs - Gemini AI Extraction</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+        nav {
+            background: #ffffff;
+            padding: 15px 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-brand { font-weight: bold; font-size: 18px; color: var(--primary); }
+        .nav-menu a {
+            text-decoration: none;
+            color: #475569;
+            margin-left: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .nav-menu a:hover, .nav-menu a.active { color: var(--primary); }
+        
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        h2 { margin-top: 0; color: var(--text-main); }
+        .log-item {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .log-success { color: #16a34a; font-weight: bold; }
+        .log-failed { color: #dc2626; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-brand">🏥 Medical Claim Portal</div>
+        <div class="nav-menu">
+            <a href="index.html">Form Entry</a>
+            <a href="admin.html">Admin Dashboard</a>
+            <a href="logs.html" class="active">System Logs</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Gemini AI Processing Logs</h2>
+        <p style="color: #64748b; font-size: 13px;">Recent image parsing history and status logs stored locally.</p>
+        <div id="logs-list" style="margin-top: 20px;">
+            <!-- Logs populated dynamically -->
+        </div>
+    </div>
+
+    <script>
+        const logsContainer = document.getElementById("logs-list");
+        const logs = JSON.parse(localStorage.getItem("gemini_form_logs") || "[]");
+
+        if (logs.length === 0) {
+            logsContainer.innerHTML = "<p style='color: #64748b;'>No logs recorded yet. Try uploading a form image.</p>";
+        } else {
+            logs.forEach(log => {
+                const div = document.createElement("div");
+                div.className = "log-item";
+                div.innerHTML = `
+                    <div>
+                        <strong>File:</strong> ${log.fileName} <br>
+                        <small style="color: #64748b;">${new Date(log.timestamp).toLocaleString()}</small>
+                    </div>
+                    <div>
+                        ${log.status === 'SUCCESS' 
+                            ? `<span class="log-success">SUCCESS (${log.filled} filled,${log.blank} blank)</span>` 
+                            : `<span class="log-failed">FAILED: ${log.error}</span>`}
+                    </div>
+                `;
+                logsContainer.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
