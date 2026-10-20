@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Medical Insurance Forms</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h2 {
+            color: #007BFF;
+            text-align: center;
+        }
+        .nav-links {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            background: #007BFF;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .nav-links a:hover {
+            background: #0056b3;
+        }
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        input.edit-input {
+            width: 120px;
+            padding: 4px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button.update-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        button.update-btn:hover {
+            background-color: #218838;
+        }
+        #auth-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #admin-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <h2>Admin Authentication Required</h2>
+        <button id="login-btn" style="padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer;">Login with Google (Admin)</button>
+    </div>
+
+    <div id="admin-section">
+        <h2>Medical Insurance Claims - Admin Dashboard</h2>
+        <div class="nav-links">
+            <a href="index.html">← Back to Form Entry Portal</a>
+        </div>
+        <div id="status-msg" style="text-align: center; margin-bottom: 15px; font-weight: bold; color: #555;">Loading records from Firebase...</div>
+        
+        <div class="table-container">
+            <table id="records-table">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>User Email</th>
+                        <th>Timestamp</th>
+                        <th>Record No</th>
+                        <th>Customer Name</th>
+                        <th>Policy No</th>
+                        <th>Height</th>
+                        <th>Weight</th>
+                        <th>Total Amt</th>
+                        <th>Email Address</th>
+                        <th>Phone No</th>
+                        <th>Res Address</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Dynamic Rows Here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBy0CwwzqNIV-PNUclNtWqZc3L8PndCZo",
+            authDomain: "form-app-e0c85.firebaseapp.com",
+            projectId: "form-app-e0c85",
+            storageBucket: "form-app-e0c85.firebasestorage.app",
+            messagingSenderId: "372950928092",
+            appId: "1:372950928092:web:5045a0a0e0199d90308219",
+            measurementId: "G-WKN6DFHRXG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        const allowedAdmins = ["abhishekcl731@gmail.com"];
+
+        const loginBtn = document.getElementById("login-btn");
+        const authContainer = document.getElementById("auth-container");
+        const adminSection = document.getElementById("admin-section");
+        const tableBody = document.getElementById("table-body");
+        const statusMsg = document.getElementById("status-msg");
+
+        loginBtn.addEventListener("click", () => {
+            signInWithPopup(auth, provider).catch(err => console.error("Login error:", err));
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user && allowedAdmins.includes(user.email)) {
+                authContainer.style.display = "none";
+                adminSection.style.display = "block";
+                await loadRecords();
+            } else if (user) {
+                alert("Access Denied: Aapke paas admin rights nahi hain!");
+                auth.signOut();
+            } else {
+                authContainer.style.display = "block";
+                adminSection.style.display = "none";
+            }
+        });
+
+        async function loadRecords() {
+            try {
+                tableBody.innerHTML = "";
+                const querySnapshot = await getDocs(collection(db, "medical_insurance_forms"));
+                
+                if (querySnapshot.empty) {
+                    statusMsg.innerText = "No records found in database.";
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const docId = docSnap.id;
+                    const record = docSnap.data();
+                    const formData = record.data || {};
+                    const timeStr = record.timestamp ? new Date(record.timestamp.seconds * 1000).toLocaleString() : "N/A";
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><button class="update-btn" data-id="${docId}">Update</button></td>
+                        <td>${record.user || "N/A"}</td>
+                        <td>${timeStr}</td>
+                        <td><input type="text" class="edit-input" data-field="RECORD_NO" value="${formData.RECORD_NO || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="CUSTOMER_NAME" value="${formData.CUSTOMER_NAME || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="POLICY_NO" value="${formData.POLICY_NO || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="HEIGHT" value="${formData.HEIGHT || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="WEIGHT" value="${formData.WEIGHT || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="TOTAL_AMT" value="${formData.TOTAL_AMT || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="EMAIL_ADDRESS" value="${formData.EMAIL_ADDRESS || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="PH_NO1" value="${formData.PH_NO1 || ''}"></td>
+                        <td><input type="text" class="edit-input" data-field="RES_ADDRESS" value="${formData.RES_ADDRESS || ''}"></td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                statusMsg.innerText = `Successfully loaded ${querySnapshot.size} records.`;
+
+                // Attach update listeners
+                document.querySelectorAll(".update-btn").forEach(btn => {
+                    btn.addEventListener("click", async (e) => {
+                        const rowId = e.target.getAttribute("data-id");
+                        const row = e.target.closest("tr");
+                        const inputs = row.querySelectorAll(".edit-input");
+                        
+                        let updatedData = {};
+                        inputs.forEach(input => {
+                            const fieldKey = input.getAttribute("data-field");
+                            updatedData[`data.${fieldKey}`] = input.value.trim();
+                        });
+
+                        try {
+                            const docRef = doc(db, "medical_insurance_forms", rowId);
+                            await updateDoc(docRef, updatedData);
+                            alert("Record successfully updated in Firebase!");
+                        } catch (err) {
+                            console.error("Update error:", err);
+                            alert("Failed to update record.");
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error("Error loading records:", err);
+                statusMsg.innerText = "Error loading records from database.";
+            }
+        }
+    </script>
+</body>
+</html>
