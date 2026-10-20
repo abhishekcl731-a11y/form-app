@@ -1,5 +1,5 @@
-// Import Firebase SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase.js";
+// Import Firebase from reliable CDN bundles
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -32,10 +32,12 @@ const saveBtn = document.getElementById("save-btn");
 loginBtn.addEventListener("click", () => {
     signInWithPopup(auth, provider)
     .then((result) => {
-        console.log("Logged in:", result.user.email);
+        console.log("Logged in successfully:", result.user.email);
     })
     .catch((error) => {
-        console.error("Login Error:", error);
+        console.error("Login Error Code:", error.code);
+        console.error("Login Error Message:", error.message);
+        alert("Login Failed: " + error.message);
     });
 });
 
@@ -86,6 +88,6 @@ saveBtn.addEventListener("click", async () => {
         alert("Data successfully saved to Firebase Database! ID: " + docRef.id);
     } catch (e) {
         console.error("Error adding document: ", e);
-        alert("Error saving data.");
+        alert("Error saving data: " + e.message);
     }
 });
