@@ -17,7 +17,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Authorized Email Whitelist
 const allowedUsers = [
     "abhishekcl731@gmail.com"
 ];
@@ -43,6 +42,7 @@ onAuthStateChanged(auth, (user) => {
             userInfo.style.display = "inline";
             userInfo.innerText = `Logged in as: ${user.email}`;
             appSection.style.display = "block";
+            checkEmptyFields(); // Run initial check
         } else {
             alert("Access Denied: Aapka email authorized nahi hai!");
             signOut(auth);
@@ -54,14 +54,29 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Image Upload & OCR Processing via Tesseract.js
+// Function to highlight empty fields in Red
+function checkEmptyFields() {
+    const inputs = document.querySelectorAll(".val-input");
+    inputs.forEach(input => {
+        if (input.value.trim() === "") {
+            input.classList.add("error-field");
+        } else {
+            input.classList.remove("error-field");
+        }
+    });
+}
+
+// Listen to input changes to update red highlights dynamically
+document.querySelectorAll(".val-input").forEach(input => {
+    input.addEventListener("input", checkEmptyFields);
+});
+
+// Image Upload & OCR Processing
 formImageInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Set Image Name field automatically
     document.getElementById("IMAGE_NAME").value = file.name;
-
     ocrStatus.innerText = "Processing OCR... Please wait (Scanning text from image)";
 
     Tesseract.recognize(
@@ -69,23 +84,20 @@ formImageInput.addEventListener("change", (e) => {
         'eng',
         { logger: m => console.log(m) }
     ).then(({ data: { text } }) => {
-        ocrStatus.innerText = "OCR Scan Completed! Please review and validate the fields below.";
-        console.log("Extracted Text:", text);
-
-        // Basic keyword parsing logic to map text into form fields if matched
+        ocrStatus.innerText = "OCR Scan Completed! Review fields below (blank fields are highlighted in red).";
         parseAndFillOCRText(text);
+        checkEmptyFields(); // Refresh highlights after OCR attempt
     }).catch(err => {
         console.error(err);
         ocrStatus.innerText = "OCR Error: Failed to read image text.";
+        checkEmptyFields();
     });
 });
 
-// Simple parser function to distribute OCR text into form fields
 function parseAndFillOCRText(text) {
     const lines = text.split('\n');
     lines.forEach(line => {
         let upperLine = line.toUpperCase();
-        // You can inspect scanned lines and map them here or manually correct them in UI
         if (upperLine.includes("POLICY")) {
             let parts = line.split(/[:,-]/);
             if(parts[1]) document.getElementById("POLICY_NO").value = parts[1].trim();
@@ -103,12 +115,11 @@ function parseAndFillOCRText(text) {
     });
 }
 
-// Enable/Disable Save Button based on Validation Checkbox
 verifyCheck.addEventListener("change", (e) => {
     saveBtn.disabled = !e.target.checked;
 });
 
-// Save Data to Firebase Firestore matching VBA schema
+// Save Data with Blank Fields Warning Prompt
 saveBtn.addEventListener("click", async () => {
     const fields = [
         "IMAGE_NAME", "RECORD_NO", "EMAIL_ADDRESS", "RES_ADDRESS", "STATE_1", "ZIP_1", 
@@ -122,9 +133,23 @@ saveBtn.addEventListener("click", async () => {
     ];
 
     let formData = {};
+    let blankCount = 0;
+
     fields.forEach(field => {
-        formData[field] = document.getElementById(field).value.trim();
+        const val = document.getElementById(field).value.trim();
+        formData[field] = val;
+        if (val === "") {
+            blankCount++;
+        }
     });
+
+    // If there are blank fields, ask user for confirmation before proceeding
+    if (blankCount > 0) {
+        const proceed = confirm(`Warning: ${blankCount} fields are still blank. Do you still want to proceed with saving?`);
+        if (!proceed) {
+            return; // Exit and let user fill out the form
+        }
+    }
 
     try {
         const docRef = await addDoc(collection(db, "medical_insurance_forms"), {
@@ -132,13 +157,14 @@ saveBtn.addEventListener("click", async () => {
             timestamp: new Date(),
             data: formData
         });
-        alert("Validated data successfully saved to Firebase Database! Record ID: " + docRef.id);
+        alert("Data successfully saved to Firebase Database! Record ID: " + docRef.id);
         
-        // Reset form & checkbox after successful save
-        document.querySelectorAll("input[type='text']").forEach(input => input.value = "");
+        // Reset form
+        document.querySelectorAll(".val-input").forEach(input => input.value = "");
         verifyCheck.checked = false;
         saveBtn.disabled = true;
         ocrStatus.innerText = "";
+        checkEmptyFields();
 
     } catch (e) {
         console.error("Error saving data: ", e);
