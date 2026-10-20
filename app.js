@@ -89,7 +89,14 @@ formImageInput.addEventListener("change", async (e) => {
             })
         });
 
-        const result = await response.json();
+        const rawText = await response.text();
+        let result;
+        try {
+            result = JSON.parse(rawText);
+        } catch (jsonErr) {
+            console.error("Non-JSON Response from Backend:", rawText);
+            throw new Error("Backend returned invalid format. Check Apps Script deployment.");
+        }
         
         if (result.success && result.data) {
             const extractedData = result.data;
@@ -110,7 +117,7 @@ formImageInput.addEventListener("change", async (e) => {
 
     } catch (err) {
         console.error("AI Error:", err);
-        ocrStatus.innerText = "Notice: AI extraction skipped/failed. You can manually fill the fields highlighted in red.";
+        ocrStatus.innerText = "Notice: AI extraction failed (" + err.message + "). You can manually fill fields.";
         ocrStatus.style.color = "#d9534f";
         checkEmptyFields();
     }
